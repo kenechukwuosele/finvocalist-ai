@@ -1,0 +1,8 @@
+
+{
+  "name": "FinVocalist AI",
+  "description": "An AI-powered voice finance assistant that helps you manage expenses, track budgets, and get financial insights through real-time conversation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
