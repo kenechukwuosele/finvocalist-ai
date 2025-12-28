@@ -1,9 +1,20 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import datetime
 import uuid
+import json
+import os
+
+# --- Plaid Imports (Stub) ---
+# In a real implementation, you would import plaid here
+# import plaid
+# from plaid.api import plaid_api
+# from plaid.model.link_token_create_request import LinkTokenCreateRequest
+# from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+# from plaid.model.products import Products
+# from plaid.model.country_code import CountryCode
 
 app = FastAPI()
 
@@ -57,20 +68,22 @@ class FinancialInsight(BaseModel):
     impact: str # 'high' | 'medium' | 'low'
 
 class FinanceState(BaseModel):
-    accounts: List[Account]
-    transactions: List[Transaction]
-    budgets: List[Budget]
-    billers: List[Biller]
-    bills: List[Bill]
-    insights: List[FinancialInsight]
-
-import json
-import os
-
-# ... (Previous imports remain, handled by context)
+    accounts: List[Account] = []
+    transactions: List[Transaction] = []
+    budgets: List[Budget] = []
+    billers: List[Biller] = []
+    bills: List[Bill] = []
+    insights: List[FinancialInsight] = []
+    
+    # Plaid specific fields
+    access_token: Optional[str] = None
+    item_id: Optional[str] = None
 
 # --- Database Persistence ---
 DATA_FILE = "finance_data.json"
+
+# Initialize empty DB
+db: FinanceState = FinanceState()
 
 def save_db():
     with open(DATA_FILE, "w") as f:
@@ -82,49 +95,15 @@ def load_db():
         try:
             with open(DATA_FILE, "r") as f:
                 data = json.load(f)
+                # Ensure lists are initialized if missing in JSON
                 db = FinanceState(**data)
             print(f"Loaded database from {DATA_FILE}")
         except Exception as e:
             print(f"Failed to load database: {e}")
-
-# --- Database (In-Memory Default) ---
-db: FinanceState = FinanceState(
-    accounts=[
-        Account(id='1', name='Main Checking', balance=4250.75, type='checking'),
-        Account(id='2', name='Emergency Fund', balance=12000.00, type='savings'),
-        Account(id='3', name='Robinhood Portfolio', balance=8560.20, type='investment'),
-    ],
-    transactions=[
-        Transaction(id='t1', date='2024-05-15', amount=3500, category='Salary', description='Monthly Paycheck', type='income'),
-        Transaction(id='t2', date='2024-05-16', amount=1200, category='Housing', description='Rent payment', type='expense'),
-        Transaction(id='t3', date='2024-05-17', amount=5.45, category='Food', description='Starbucks Coffee', type='expense'),
-        Transaction(id='t4', date='2024-05-18', amount=65.20, category='Shopping', description='Amazon - Household', type='expense'),
-        Transaction(id='t5', date='2024-05-19', amount=120, category='Utilities', description='Electric Bill', type='expense'),
-    ],
-    budgets=[
-        Budget(category='Food', limit=500, spent=340),
-        Budget(category='Entertainment', limit=200, spent=150),
-        Budget(category='Transport', limit=300, spent=85),
-    ],
-    billers=[
-        Biller(id='b1', name='Verizon Wireless', category='Utilities', autoPay=False),
-        Biller(id='b2', name='State Farm Insurance', category='Insurance', autoPay=True),
-        Biller(id='b3', name='City Water Dept', category='Utilities', autoPay=False),
-    ],
-    bills=[
-        Bill(id='bill1', billerId='b1', amount=85.00, dueDate='2024-06-01', status='pending'),
-        Bill(id='bill2', billerId='b3', amount=42.50, dueDate='2024-06-05', status='pending'),
-    ],
-    insights=[
-        FinancialInsight(
-            id='i1', 
-            title='High Subscription Spend', 
-            content='You spent $120 on streaming services this month. Canceling one could save you $480/year.', 
-            type='budgeting', 
-            impact='medium'
-        )
-    ]
-)
+            db = FinanceState() # Fallback to empty
+    else:
+        print("No existing database found. Starting fresh.")
+        save_db()
 
 # Load existing data if available
 load_db()
@@ -134,6 +113,14 @@ load_db()
 @app.get("/api/state")
 async def get_state():
     return db
+
+@app.get("/api/accounts")
+async def get_accounts():
+    return db.accounts
+
+@app.get("/api/transactions")
+async def get_transactions():
+    return db.transactions
 
 @app.post("/api/transaction")
 async def add_transaction(tx: Transaction):
@@ -239,10 +226,6 @@ async def get_financial_profile():
     total_savings = sum(a.balance for a in db.accounts if a.type == 'savings')
     total_balance = sum(a.balance for a in db.accounts)
     
-    # Simple logic: assume transactions list is recent (in real app, filter by date)
-    # Let's filter for this "month" (or just last 30 days if dates were real objects, but they are strings 'YYYY-MM-DD')
-    # For now, to ensure data, we take all transactions in the DB as "recent history"
-    
     income = sum(t.amount for t in db.transactions if t.type == 'income')
     expenses = sum(t.amount for t in db.transactions if t.type == 'expense')
     
@@ -250,7 +233,7 @@ async def get_financial_profile():
     if income > 0:
         savings_rate = ((income - expenses) / income) * 100
         
-    monthly_burn = expenses # Assuming the DB represents a month context for simplicity
+    monthly_burn = expenses 
     
     runway_months = 0
     if monthly_burn > 0:
@@ -269,3 +252,22 @@ async def get_financial_profile():
         "recent_transactions": db.transactions[:10],
         "budgets": db.budgets
     }
+
+# --- Plaid Integration Stubs ---
+
+@app.post("/api/create_link_token")
+async def create_link_token():
+    # In a real app, you would call Plaid API here to get a link token
+    # return client.link_token_create(request)
+    return {"link_token": "link-sandbox-placeholder-token"}
+
+@app.post("/api/set_access_token")
+async def set_access_token(public_token: str = Body(..., embed=True)):
+    # In a real app, exchange public_token for access_token via Plaid API
+    # exchange_response = client.item_public_token_exchange(...)
+    # db.access_token = exchange_response['access_token']
+    
+    # Simulating saving a token
+    db.access_token = f"access-sandbox-{uuid.uuid4()}"
+    save_db()
+    return {"message": "Access token saved successfully"}

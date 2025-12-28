@@ -178,7 +178,7 @@ export default function App() {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <Icons.Wallet className="text-white w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">FinVocalist <span className="text-emerald-400">AI</span></h1>
+            <h1 className="text-xl font-bold tracking-tight">alexis <span className="text-emerald-400">AI</span></h1>
           </div>
           <div className="flex items-center gap-4">
             <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${isListening ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'}`}>

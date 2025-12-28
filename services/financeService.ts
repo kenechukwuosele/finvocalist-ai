@@ -1,15 +1,30 @@
 import { FinanceState, Transaction, FinancialInsight } from '../types';
 
 export const getFinanceData = async (): Promise<FinanceState> => {
-  const res = await fetch('/api/state');
+  const res = await fetch('http://localhost:8000/api/state');
   if (!res.ok) throw new Error('Failed to fetch finance data');
   return res.json();
 };
 
 export const getFinancialProfile = async (): Promise<any> => {
-    const res = await fetch('/api/profile');
+    const res = await fetch('http://localhost:8000/api/profile');
     if (!res.ok) throw new Error('Failed to fetch financial profile');
     return res.json();
+};
+
+export const createLinkToken = async (): Promise<{ link_token: string }> => {
+    const res = await fetch('http://localhost:8000/api/create_link_token', { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to create link token');
+    return res.json();
+};
+
+export const setAccessToken = async (public_token: string): Promise<void> => {
+     const res = await fetch('http://localhost:8000/api/set_access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ public_token })
+    });
+    if (!res.ok) throw new Error('Failed to set access token');
 };
 
 export const addTransaction = async (tx: Transaction): Promise<{ message: string, new_balance: number }> => {

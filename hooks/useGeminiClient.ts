@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import { decode, decodeAudioData, createBlob } from '../services/audioUtils';
-import { FINANCE_TOOLS } from '../services/financeService';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
+import { decode, decodeAudioData, createBlob } from "../services/audioUtils";
+import { FINANCE_TOOLS } from "../services/financeService";
 
 interface UseGeminiClientProps {
   onFunctionCall: (fc: any) => Promise<any>;
@@ -9,11 +9,18 @@ interface UseGeminiClientProps {
   onMessageAssistant?: (text: string) => void;
 }
 
-export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssistant }: UseGeminiClientProps) => {
+export const useGeminiClient = ({
+  onFunctionCall,
+  onMessageUser,
+  onMessageAssistant,
+}: UseGeminiClientProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const sessionRef = useRef<any>(null);
-  const audioContextsRef = useRef<{ input: AudioContext; output: AudioContext } | null>(null);
+  const audioContextsRef = useRef<{
+    input: AudioContext;
+    output: AudioContext;
+  } | null>(null);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const nextStartTimeRef = useRef<number>(0);
   const streamRef = useRef<MediaStream | null>(null);
@@ -24,7 +31,7 @@ export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssist
       sessionRef.current = null;
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     if (audioContextsRef.current) {
@@ -32,29 +39,35 @@ export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssist
       audioContextsRef.current.output.close();
       audioContextsRef.current = null;
     }
-    sourcesRef.current.forEach(s => s.stop());
+    sourcesRef.current.forEach((s) => s.stop());
     sourcesRef.current.clear();
     setIsListening(false);
     setIsConnecting(false);
   }, []);
 
-  const handleFunctionCall = useCallback(async (fc: any) => {
-    const result = await onFunctionCall(fc);
-    if (result !== undefined && sessionRef.current) {
-       sessionRef.current.sendToolResponse({
-        functionResponses: { id: fc.id, name: fc.name, response: { result } }
-      });
-    }
-  }, [onFunctionCall]);
-  
-  // Expose a method to manually send a tool response (e.g. after async confirmation)
-  const sendToolResponse = useCallback((id: string, name: string, result: any) => {
-      if (sessionRef.current) {
-          sessionRef.current.sendToolResponse({
-              functionResponses: { id, name, response: { result } }
-          });
+  const handleFunctionCall = useCallback(
+    async (fc: any) => {
+      const result = await onFunctionCall(fc);
+      if (result !== undefined && sessionRef.current) {
+        sessionRef.current.sendToolResponse({
+          functionResponses: { id: fc.id, name: fc.name, response: { result } },
+        });
       }
-  }, []);
+    },
+    [onFunctionCall]
+  );
+
+  // Expose a method to manually send a tool response (e.g. after async confirmation)
+  const sendToolResponse = useCallback(
+    (id: string, name: string, result: any) => {
+      if (sessionRef.current) {
+        sessionRef.current.sendToolResponse({
+          functionResponses: { id, name, response: { result } },
+        });
+      }
+    },
+    []
+  );
 
   const startSession = async () => {
     if (isListening || isConnecting) return;
@@ -63,18 +76,22 @@ export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssist
     try {
       const apiKey = process.env.API_KEY;
       if (!apiKey) {
-        throw new Error("Gemini API Key is missing. Please check your .env.local file.");
+        throw new Error(
+          "Gemini API Key is missing. Please check your .env.local file."
+        );
       }
       const ai = new GoogleGenAI({ apiKey });
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+      const inputCtx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)({ sampleRate: 16000 });
+      const outputCtx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)({ sampleRate: 24000 });
       audioContextsRef.current = { input: inputCtx, output: outputCtx };
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        model: "gemini-2.5-flash-native-audio-preview-09-2025",
         callbacks: {
           onopen: () => {
             setIsListening(true);
@@ -84,71 +101,120 @@ export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssist
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
-              sessionPromise.then(s => s.sendRealtimeInput({ media: pcmBlob }));
+              sessionPromise.then((s) =>
+                s.sendRealtimeInput({ media: pcmBlob })
+              );
             };
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            const base64Audio =
+              message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
             if (base64Audio && audioContextsRef.current) {
               const outCtx = audioContextsRef.current.output;
-              nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outCtx.currentTime);
-              const buffer = await decodeAudioData(decode(base64Audio), outCtx, 24000, 1);
+              nextStartTimeRef.current = Math.max(
+                nextStartTimeRef.current,
+                outCtx.currentTime
+              );
+              const buffer = await decodeAudioData(
+                decode(base64Audio),
+                outCtx,
+                24000,
+                1
+              );
               const source = outCtx.createBufferSource();
               source.buffer = buffer;
               source.connect(outCtx.destination);
-              source.addEventListener('ended', () => sourcesRef.current.delete(source));
+              source.addEventListener("ended", () =>
+                sourcesRef.current.delete(source)
+              );
               source.start(nextStartTimeRef.current);
               nextStartTimeRef.current += buffer.duration;
               sourcesRef.current.add(source);
             }
 
             if (message.serverContent?.inputTranscription?.text) {
-               onMessageUser?.(message.serverContent.inputTranscription.text);
+              onMessageUser?.(message.serverContent.inputTranscription.text);
             }
             if (message.serverContent?.outputTranscription?.text) {
-               onMessageAssistant?.(message.serverContent.outputTranscription.text);
+              onMessageAssistant?.(
+                message.serverContent.outputTranscription.text
+              );
             }
 
             if (message.toolCall) {
-              for (const fc of message.toolCall.functionCalls) handleFunctionCall(fc);
+              for (const fc of message.toolCall.functionCalls)
+                handleFunctionCall(fc);
             }
 
             if (message.serverContent?.interrupted) {
-              sourcesRef.current.forEach(s => s.stop());
+              sourcesRef.current.forEach((s) => s.stop());
               sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
             }
           },
           onerror: (e) => stopSession(),
-          onclose: () => stopSession()
+          onclose: () => stopSession(),
         },
         config: {
           responseModalities: [Modality.AUDIO],
-          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
+          },
           inputAudioTranscription: {},
           outputAudioTranscription: {},
           tools: [{ functionDeclarations: FINANCE_TOOLS as any }],
-          systemInstruction: `You are FinVocalist, an advanced AI Financial Advisor. 
-          Your goals:
-          1. Provide personalized financial advice: Use 'get_financial_profile' to understand user patterns. 
-             - **CRITAL: Check the 'savings_rate_pct' and 'emergency_runway_months' metrics in the profile.**
-             - If savings rate is < 20%, recommend specific cuts to discretionary spending (check the 'spending_summary').
-             - If emergency runway is < 6 months, prioritizing saving for emergencies is the #1 recommendation.
-             - Use 'add_financial_insight' to post these permanent recommendations to their dashboard.
-          2. Voice-activated Bill Payment: Users can ask to pay bills. Use 'get_pending_bills' to identify them and 'pay_bill' to initiate. Mention that you are using "Voice ID Authentication" for security. Always confirm the amount and biller before proceeding.
-          3. General Finance: Manage transactions and balances.
-          4. Fund Transfers: You can transfer funds between accounts using 'transfer_funds'.
-          Be proactive! If you see a user is overspending in a category, mention it. Be warm, professional, and secure.`
-        }
+          systemInstruction: `You are Alexis, an elite AI Financial Advisor. Your persona is professional, highly analytical, yet warmly encouraging. You act as a financial "co-pilot," focusing on long-term wealth health and immediate security.
+
+Core Mission: Proactively manage user finances by balancing strict data analysis with seamless execution of financial tasks.
+
+Phase 1: Diagnostic & Dashboard (The "Financial Health Check")
+
+Initialize: At the start of a relevant session, call get_financial_profile.
+
+Prioritization Logic:
+
+CRITICAL (Emergency Fund): If emergency_runway_months < 6, prioritize this above all else. Use a tone of "urgent care" to explain why a safety net is the foundation of their plan.
+
+OPTIMIZATION (Savings Rate): If savings_rate_pct < 20%, analyze the spending_summary. Identify the top 2-3 discretionary categories (e.g., dining, subscriptions) and propose specific, dollar-amount cuts.
+
+Persistence: Use add_financial_insight to pin these specific goals to the user's dashboard so they remain top-of-mind.
+
+Phase 2: Secure Transaction Management
+
+Bill Payments: When a user asks to pay bills, call get_pending_bills.
+
+Security Protocol: You must verbally state: "Initiating Voice ID Authentication..." before proceeding.
+
+The "Check Twice" Rule: Before calling pay_bill or transfer_funds, you must summarize the transaction: "I'm ready to pay [Amount] to [Biller] from your [Account]. Shall I proceed?"
+
+Phase 3: Proactive Intelligence
+
+Anomaly Detection: If you notice a spike in spending or a balance drop during a get_financial_profile or transaction check, mention it immediately: "I noticed your grocery spending is 20% higher than usual this month; would you like to review those transactions?"
+
+Encouragement: Celebrate wins when the savings rate improves or a bill is paid off.
+
+Tone & Style:
+
+Concise but Insightful: Don't just give numbers; explain the impact of the numbers.
+
+Security-First: Regularly mention security steps to build trust.
+
+Warmth: Use the user's name and maintain a helpful, "can-do" attitude.`,
+        },
       });
 
       sessionRef.current = await sessionPromise;
     } catch (err: any) {
       console.error(err);
-      if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
-        alert("Microphone access denied. Please allow microphone access in your browser settings to use the voice features.");
+      if (
+        err.name === "NotAllowedError" ||
+        err.message?.includes("Permission denied")
+      ) {
+        alert(
+          "Microphone access denied. Please allow microphone access in your browser settings to use the voice features."
+        );
       } else {
         alert("Failed to connect: " + (err.message || "Unknown error"));
       }
@@ -156,5 +222,11 @@ export const useGeminiClient = ({ onFunctionCall, onMessageUser, onMessageAssist
     }
   };
 
-  return { isListening, isConnecting, startSession, stopSession, sendToolResponse };
+  return {
+    isListening,
+    isConnecting,
+    startSession,
+    stopSession,
+    sendToolResponse,
+  };
 };
