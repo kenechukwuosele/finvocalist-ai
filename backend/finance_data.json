@@ -1,6 +1,23 @@
 {
   "accounts": [],
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "test-2",
+      "date": "2024-05-20",
+      "amount": 250.0,
+      "category": "Shopping",
+      "description": "New Purchase",
+      "type": "expense"
+    },
+    {
+      "id": "test-1",
+      "date": "2024-05-15",
+      "amount": 100.5,
+      "category": "Food",
+      "description": "Test Transaction",
+      "type": "expense"
+    }
+  ],
   "budgets": [],
   "billers": [],
   "bills": [],
