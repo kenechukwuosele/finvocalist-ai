@@ -1,5 +1,3 @@
-
-```markdown
 # 🎙️ FinVocalist AI
 **Bridging the Gap Between Financial Data and Human Insights for the Nigerian Market.**
 
@@ -85,8 +83,5 @@ FinVocalist AI is designed to work in tandem with **DbAdmin AI**. While **DbAdmi
 
 © 2026 FinVocalist AI - Vertical AI for the African Frontier.
 
-```
-
-**Would you like me to generate a `requirements.txt` file based on the libraries we discussed?**
 
 ```
