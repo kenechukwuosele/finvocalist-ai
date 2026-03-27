@@ -1,87 +1,34 @@
 # 🎙️ FinVocalist AI
-**Bridging the Gap Between Financial Data and Human Insights for the Nigerian Market.**
+> **If Siri and your bank app had a baby.**
 
-FinVocalist AI is a specialized **Vertical AI** solution that transforms dry, complex financial data into digestible, actionable narrative insights. Built specifically for entrepreneurs and decision-makers in Nigeria, it localizes economic intelligence by factoring in Naira volatility, NGX trends, and local market nuances.
+FinVocalist AI is a **voice-first personal finance copilot** designed to help users handle their finances conversationally—ask questions, get insights, and (optionally) take actions using natural language.
 
----
-
-## 🚀 Key Features
-
-* **Narrative Financial Reporting:** Automatically converts spreadsheets and database outputs into professional human-readable summaries.
-* **Nigerian Market Context:** Intelligence layers specifically tuned for local economic factors (Inflation rates, FX changes, and Nigerian Exchange data).
-* **Voice-Native Architecture:** Designed for "vocalized" insights—perfect for busy CEOs who need a briefing on the go.
-* **Seamless Backend Integration:** Plugs directly into technical stacks (like **DbAdmin AI**) to pull raw data and output strategic wisdom.
-
-## 🛠️ Tech Stack
-
-* **Language:** Python 3.12+
-* **API Framework:** FastAPI
-* **Orchestration:** LangChain / LangGraph
-* **Data Processing:** Pandas / NumPy
-* **Containerization:** Docker
-
-## 📂 Project Structure
-
-```text
-finvocalist-ai/
-├── src/
-│   ├── analyzers/      # Logic for Nigerian market trends
-│   ├── vocalizers/     # Text-to-narrative and voice synthesis
-│   ├── api/            # FastAPI endpoints
-│   └── database/       # Integration with DbAdmin tools
-├── tests/              # Pytest suite
-├── docker-compose.yml
-└── requirements.txt
-
-```
-
-## 🚦 Quick Start
-
-### 1. Installation
-
-Clone the repository and set up your virtual environment:
-
-```bash
-git clone [https://github.com/your-repo/finvocalist-ai.git](https://github.com/your-repo/finvocalist-ai.git)
-cd finvocalist-ai
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
-pip install -r requirements.txt
-
-```
-
-### 2. Configuration
-
-Create a `.env` file in the root directory:
-
-```env
-OPENAI_API_KEY=your_key_here
-DATABASE_URL=your_db_connection_string
-MARKET_DATA_PROVIDER=ngx_api
-
-```
-
-### 3. Execution
-
-Start the FastAPI server:
-
-```bash
-uvicorn src.api.main:app --reload
-
-```
+Examples:
+- “How much did I spend on food this week?”
+- “Can I afford ₦50,000 on a new phone this month?”
+- “Summarize my account activity and highlight anything unusual.”
 
 ---
 
-## 🤝 Integration with DbAdmin AI
+## 🧩 Problem
 
-FinVocalist AI is designed to work in tandem with **DbAdmin AI**. While **DbAdmin** handles technical query optimization and database health, **FinVocalist** acts as the intelligence layer that explains the *why* behind the numbers to non-technical stakeholders.
+Personal finance tools often fail because:
+- dashboards are too complex for everyday users,
+- insights are buried in charts and tables,
+- tracking spending takes time and discipline,
+- many products are not localized to Nigerian realities.
+
+People don’t want to “do finance homework”—they want **quick answers**.
 
 ---
 
-© 2026 FinVocalist AI - Vertical AI for the African Frontier.
+## 🛠️ Approach
 
+FinVocalist approaches finance as a conversation:
+- **voice-first UX**: ask naturally, get a clear response
+- **narrative explanations**: numbers → plain-English meaning
+- **insight-first design**: prioritize “what matters” over raw dashboards
+- **modular services**: so bank integrations, categorization, and insights can evolve independently
 
-```
+This repo currently contains a TypeScript React frontend built with Vite (`npm run dev`).
+Add a `LICENSE` file if you want open-source usage terms.
