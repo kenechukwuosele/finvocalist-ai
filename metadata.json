@@ -1,7 +1,7 @@
 
 {
   "name": "FinVocalist AI",
-  "description": "An AI-powered voice finance assistant that helps you manage expenses, track budgets, and get financial insights through real-time conversation.",
+  "description": "A voice-first personal finance copilot for conversational insights and actions tailored to Nigerian realities.",
   "requestFramePermissions": [
     "microphone"
   ]
