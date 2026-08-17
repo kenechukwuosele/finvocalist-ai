@@ -1,7 +1,9 @@
 # 🎙️ FinVocalist AI
 > **If Siri and your bank app had a baby.**
 
-FinVocalist AI is a **voice-first personal finance copilot** designed to help users handle their finances conversationally ask questions, get insights, and (optionally) take actions using natural language.
+## About
+
+FinVocalist AI is a **voice-first personal finance copilot** built to help people manage money through natural conversation. Instead of navigating complex dashboards, users can ask finance questions, get clear insights, and optionally take actions in simple plain language.
 
 Examples:
 - “How much did I spend on food this week?”
